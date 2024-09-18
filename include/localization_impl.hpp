@@ -6,7 +6,7 @@ class Localization
 {
 private:
     GeographicLib::LocalCartesian geoConverter;
-    YAML::Node config;
+    // YAML::Node config;
     
     bool initial_flag = false;
     bool vehicle_static = false;

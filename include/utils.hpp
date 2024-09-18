@@ -7,8 +7,12 @@
 #include <numeric>
 #include <cmath>
 #include <memory>
-#include <boost/filesystem.hpp>
-#include <yaml-cpp/yaml.h>
+#include <deque>
+#include <unistd.h>
+#include <cstring>
+
+// #include <boost/filesystem.hpp>
+// #include <yaml-cpp/yaml.h>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>

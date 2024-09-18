@@ -2,19 +2,36 @@
 
 Localization::Localization()
 {
-    std::ifstream fin_config("/home/lhy/codecplus/test/config.yaml");
-    if (!fin_config.is_open())
+    // std::ifstream fin_config("/home/lhy/codecplus/test/config.yaml");
+    // if (!fin_config.is_open())
+    // {
+    //     std::cerr << "Error: Unable to open file 'config.yaml'." << std::endl;
+    // }
+
+    // config = YAML::Load(fin_config);
+
+    // bias_ax = config["bias_ax"].as<double>();
+    // bias_ay = config["bias_ay"].as<double>();
+    // bias_wz = config["bias_wz"].as<double>();
+    bias_ax = -0.374946;
+    bias_ay = -0.415610;
+    bias_wz = -0.015;
+
+    char buffer[1024];
+    if (getcwd(buffer, sizeof(buffer)) != nullptr)
     {
-        std::cerr << "Error: Unable to open file 'config.yaml'." << std::endl;
+        std::string current_path_string(buffer);
+        current_path_ = std::string(buffer);
+        std::cout << "Current path is: " << current_path_string << std::endl;
+    }
+    else
+    {
+        std::cerr << "Failed to get current directory" << std::endl;
     }
 
-    config = YAML::Load(fin_config);
-
-    bias_ax = config["bias_ax"].as<double>();
-    bias_ay = config["bias_ay"].as<double>();
-    bias_wz = config["bias_wz"].as<double>();
-
-    current_path_ = boost::filesystem::current_path().string();
+    // Current path is: /home/lhy/codecplus/car_logging/build
+    // Current working directory: /home/lhy/codecplus/car_logging/build
+    // current_path_ = boost::filesystem::current_path().string();
     std::cout << "Current working directory: " << current_path_ << std::endl;
 
     log_path_ = current_path_ + "/../log/log.txt";
