@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <cstring>
 
-// #include <boost/filesystem.hpp>
 // #include <yaml-cpp/yaml.h>
 
 #include <Eigen/Core>
@@ -23,8 +22,8 @@
 
 struct GPSDATA
 {
-    std::string time;
-    int timestamp = 0;
+    uint32_t Utctime = 0;
+    double timestamp = 0.0;
     int vehicleheading = 0;
     double longitude = 0.0;
     double latitude = 0.0;
@@ -36,22 +35,42 @@ struct GPSDATA
 struct IMUDATA
 {
     int index;
-    int timestamp;
-    std::vector<double> acceleration;
-    std::vector<double> anglespeed;
+    uint32_t Utctime = 0;
+    double timestamp = 0.0;
+    double ax = 0.0;
+    double ay = 0.0;
+    double az = 0.0;
+    double wx = 0.0;
+    double wy = 0.0;
+    double wz = 0.0;
 };
 
 struct Pose
 {
+    uint32_t Utctime;
     double timestamp;
-    double phi;
-    double vel;
-    double x = 0, y = 0, z = 0;
-    double qx = 0, qy = 0, qz = 0, qw = 1;
+    double qx = 0.0, qy = 0.0, qz = 0.0, qw = 1.0;
+    double x = 0.0, y = 0.0, z = 0.0;
     Eigen::Matrix3f P;
+    double vel;
+    double phi;           // rad
+    double heading = 0.0; // deg
+    double latitude = 0.0;
+    double longtitude = 0.0;
+    double altitude = 0.0;
 };
 
-double convertStringToIntTime(const std::string &timeStr)
+struct LocData
+{
+    uint32_t Utctime; // Utc时间, 相对于2000-01-01 00:00:00过去的秒数
+    std::vector<IMUDATA> imu_data_queue;
+    GPSDATA gps_data;
+    bool gps_flag = false;
+    bool imu_flag = false;
+    bool update_flag = true;
+};
+
+inline uint32_t convertStringToIntTime(const std::string &timeStr)
 {
     std::tm tm = {};
     std::istringstream ss(timeStr);
@@ -69,56 +88,10 @@ double convertStringToIntTime(const std::string &timeStr)
     std::time_t time = std::mktime(&tm);
 
     // 将 time_t 转换为 int，表示自UNIX纪元以来的秒数
-    return static_cast<int>(time);
+    return static_cast<uint32_t>(time);
 }
 
-Eigen::Quaterniond convertPhiToQuaterniond(const double phi)
-{
-    Eigen::AngleAxisd rotation_vector = Eigen::AngleAxisd(phi, Eigen::Vector3d::UnitZ());
-    Eigen::Quaterniond Q(rotation_vector);
-    return Q;
-}
-
-// 模板化的重载 << 运算符，专门用于长度为3的 std::vector
-template <typename T>
-std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec)
-{
-    if (vec.size() == 3)
-    {
-        os << "[" << vec[0] << ", " << vec[1] << ", " << vec[2] << "]";
-    }
-    else
-    {
-        os << "Vector size is not 3, cannot display.";
-    }
-    return os;
-}
-
-std::ostream &operator<<(std::ostream &os, const GPSDATA &gps)
-{
-    os << "TimeStamp: " << gps.timestamp << "(" << gps.time << ")"
-       << ", LockStatus: " << gps.lockstatus
-       << ", Longitude: " << std::fixed << std::setprecision(6) << gps.longitude
-       << ", Latitude: " << gps.latitude
-       //    << ", Altitude: " << gps.altitude
-       << ", Speed: " << std::fixed << std::setprecision(2) << gps.vehiclespeed << "m/s"
-       << ", Heading: " << gps.vehicleheading;
-
-    // os << std::setprecision(9) << gps.latitude << ", " << gps.longitude;
-    return os;
-}
-
-std::ostream &operator<<(std::ostream &os, const IMUDATA &imu)
-{
-    os << "TimeStamp: " << imu.timestamp
-       << "." << 2 * imu.index << ", "
-       //  << "Index: " << imu.index << ", "
-       << "acceleration: " << imu.acceleration << ", \t"
-       << "omega: " << imu.anglespeed;
-    return os;
-}
-
-void str2vector(std::string &str, std::vector<double> &vec, double ratio)
+inline void str2vector(std::string &str, std::vector<double> &vec, double ratio)
 {
     std::string tmp;
     for (int i = 0; i < str.size(); ++i)
@@ -139,7 +112,7 @@ void str2vector(std::string &str, std::vector<double> &vec, double ratio)
     }
 }
 
-std::vector<std::string> SplitStringByComma(const std::string &str)
+inline std::vector<std::string> SplitStringByComma(const std::string &str)
 {
     std::vector<std::string> tokens;
     std::istringstream iss(str);
@@ -153,7 +126,7 @@ std::vector<std::string> SplitStringByComma(const std::string &str)
     return tokens;
 }
 
-std::string ExtractNumbersAndDots(const std::string &str)
+inline std::string ExtractNumbersAndDots(const std::string &str)
 {
     std::string numbersAndDots;
     for (char c : str)
@@ -166,7 +139,44 @@ std::string ExtractNumbersAndDots(const std::string &str)
     return numbersAndDots;
 }
 
-void removeLastStaticData(std::deque<GPSDATA> &gps, std::deque<IMUDATA> &imu)
+// 模板化的重载 << 运算符，专门用于长度为3的 std::vector
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec)
+{
+    if (vec.size() == 3)
+    {
+        os << "[" << vec[0] << ", " << vec[1] << ", " << vec[2] << "]";
+    }
+    else
+    {
+        os << "Vector size is not 3, cannot display.";
+    }
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const GPSDATA &gps)
+{
+    os << "TimeStamp: " << gps.timestamp << "(" << gps.Utctime << ")"
+       << ", LockStatus: " << gps.lockstatus
+       << ", Longitude: " << std::fixed << std::setprecision(6) << gps.longitude
+       << ", Latitude: " << gps.latitude
+       //    << ", Altitude: " << gps.altitude
+       << ", Speed: " << std::fixed << std::setprecision(2) << gps.vehiclespeed << "m/s"
+       << ", Heading: " << gps.vehicleheading;
+
+    // os << std::setprecision(9) << gps.latitude << ", " << gps.longitude;
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const IMUDATA &imu)
+{
+    os << "TimeStamp: " << imu.timestamp << "(" << imu.Utctime << "), "
+       << "acceleration: " << "[" << imu.ax << ", " << imu.ay << ", " << imu.az << "]" << ", \t"
+       << "omega: " << "[" << imu.wx << ", " << imu.wy << ", " << imu.wz << "]";
+    return os;
+}
+
+inline void removeLastStaticData(std::deque<GPSDATA> &gps, std::deque<IMUDATA> &imu)
 {
     double last_longitude, last_latitude;
     int idx = 1;
@@ -198,14 +208,3 @@ void removeLastStaticData(std::deque<GPSDATA> &gps, std::deque<IMUDATA> &imu)
     std::cout << "After IMUDATA size: " << imu.size() << "\n";
 }
 
-void correct_Phi(double &phi)
-{
-    if (phi > M_PI)
-    {
-        phi -= 2 * M_PI;
-    }
-    else if (phi < -M_PI)
-    {
-        phi += 2 * M_PI;
-    }
-}
