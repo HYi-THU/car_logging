@@ -1,8 +1,7 @@
-#ifndef GD_DATA_TRANSMITTER_H
-#define GD_DATA_TRANSMITTER_H
+#pragma once
+
 #include <memory>
 #include <vector>
-#include "localization_impl.h"
 
 namespace GdApi
 {
@@ -42,6 +41,9 @@ namespace GdApi
     double LatitudeDegree;  // 纬度(度)
     double LongitudeDegree; // 经度(度)
 
+    // 方向 0-359, 正北为0, 顺时针
+    double Heading;
+
     // 看需求ENU 输出(东北天坐标系) 
     double pos_E;
     double pos_N;
@@ -50,33 +52,4 @@ namespace GdApi
     uint64_t TimeStamp; // 时间戳, ms
     uint32_t UtcTime;   // Utc时间, 相对于2000-01-01 00:00:00过去的秒数
   };
-
-  // 定义接口类
-  class GdWorker
-  {
-  public:
-    GdWorker(void);
-    ~GdWorker(void);
-
-  public:
-    // 0.1 使用前需要设定Gnss可用解的状态标志位
-    void SetGnssLockStatus(const uint32_t status);
-
-    // 0.2 使用前需要设定Sensor的数据频率
-    void SetSensorFrequency(const uint16_t frequency);
-
-    // 1.传递六轴传感器数据
-    void SetSensor(const std::vector<Sensor> &arrSensor);
-
-    // 2.传递GPS数据
-    void SetGnss(const GnssInfo &sInfo);
-
-    // 3.获取定位结果
-    void GetResult(LocalizationResult &result);
-
-  private:
-    std::shared_ptr<Localization> loc_ptr;
-  };
 } // namespace GdApi
-
-#endif // GD_DATA_TRANSMITTER_H

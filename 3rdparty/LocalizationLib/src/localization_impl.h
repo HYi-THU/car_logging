@@ -1,8 +1,16 @@
 #pragma once
-#include "utils.hpp"
+#include "loc_base.h"
+#include "GdApi.h"
+#include "loc_interface.h"
 
-class Localization
+#include <Geocentric.hpp>
+#include <LocalCartesian.hpp>
+
+class Localization : public LocInterface
 {
+public:
+
+
 private:
     GeographicLib::LocalCartesian geoConverter;
     // YAML::Node config;
@@ -66,10 +74,23 @@ public:
     Localization(/* args */);
     ~Localization();
 
-    void set_Gnss_Locked_Status(const std::string &str);
+public:
+    // 0.1 使用前需要设定Gnss可用解的状态标志位
+    virtual void set_Gnss_Locked_Status(const uint32_t status);
 
-    void set_Imu_Frequency(const uint16_t frequency);
+    // 0.2 使用前需要设定Sensor的数据频率
+    virtual void set_Imu_Frequency(const uint16_t frequency);
 
+    // 1.传递六轴传感器数据
+    virtual void feed_imu_queue(const std::vector<GdApi::Sensor> &arrSensor);
+
+    // 2.传递GPS数据
+    virtual void feed_gnss(const GdApi::GnssInfo &sInfo);
+
+    // 3.获取定位结果
+    virtual void GetPose(GdApi::LocalizationResult &result);
+
+public:
     void Initializer(const GPSDATA &p1, const GPSDATA &p2);
 
     bool Is_initial();
@@ -89,8 +110,6 @@ public:
     void feed_gnss(const GPSDATA &gps);
 
     void Run();
-
-    void GetPose(Pose &current_pose);
 
 private:
     void correct_Phi(double &phi);

@@ -1,6 +1,7 @@
 #include <sstream>
 #include <fstream>
 
+#include "utils.hpp"
 #include "GdWorker.h"
 
 using namespace std;
@@ -21,7 +22,7 @@ int main()
     std::cerr << "Failed to get current directory" << std::endl;
   }
 
-  std::ifstream file("../../data/陀螺仪数据_20240730.txt");
+  std::ifstream file("../data/陀螺仪数据_20240730.txt");
 
   if (!file.is_open())
   {
@@ -123,7 +124,7 @@ int main()
   std::string loc_result_path_;
   std::ofstream loc_result_fout_;
 
-  loc_result_path_ = current_path_ + "/../../log/gps_points.txt";
+  loc_result_path_ = current_path_ + "/../log/gps_points.txt";
   loc_result_fout_.open(loc_result_path_, std::ios::trunc);
 
   // 保存经纬度信息
@@ -133,6 +134,7 @@ int main()
                      << loc_res.LatitudeDegree << ", "
                      << loc_res.LongitudeDegree << std::endl;
   }
+  std::cout << "finish!" << std::endl;
 
   return 0;
 }

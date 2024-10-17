@@ -65,15 +65,67 @@ Localization::~Localization()
   velocity_fout_.close();
 }
 
-void Localization::set_Gnss_Locked_Status(const std::string &str)
+void Localization::set_Gnss_Locked_Status(const uint32_t status)
 {
-  gnss_locked_status_ = str;
+  gnss_locked_status_ = std::to_string(status);
 }
 
 void Localization::set_Imu_Frequency(const uint16_t frequency)
 {
   imu_frequency_ = frequency;
   imu_dt_ = 1.0 / imu_frequency_;
+}
+
+void Localization::feed_imu_queue(const std::vector<GdApi::Sensor> &arrSensor)
+{
+  int idx = 0;
+  std::vector<IMUDATA> imu_queue;
+
+  for (auto &sen : arrSensor)
+  {
+    IMUDATA imudata;
+
+    imudata.index = idx++;
+    imudata.Utctime = sen.UtcTime;
+    imudata.timestamp = 1e-3 * sen.TimeStamp;
+    imudata.ax = 0.0978 * sen.AccX;
+    imudata.ay = 0.0978 * sen.AccY;
+    imudata.az = 0.0978 * sen.AccZ;
+    imudata.wx = 0.01 * M_PI / 180.0 * sen.AngX;
+    imudata.wy = 0.01 * M_PI / 180.0 * sen.AngY;
+    imudata.wz = 0.01 * M_PI / 180.0 * sen.AngZ;
+
+    imu_queue.push_back(imudata);
+  }
+
+  this->feed_imu_queue(imu_queue);
+}
+
+void Localization::feed_gnss(const GdApi::GnssInfo &sInfo)
+{
+  GPSDATA gpsdata;
+  gpsdata.Utctime = sInfo.UtcTime;
+  gpsdata.timestamp = 1e-3 * sInfo.TimeStamp;
+  gpsdata.lockstatus = std::to_string(sInfo.Status);
+  gpsdata.latitude = sInfo.LatitudeDegree;
+  gpsdata.longitude = sInfo.LongitudeDegree;
+  gpsdata.altitude = 1.0 * sInfo.GpsAltitude;
+  gpsdata.vehiclespeed = 1.0 * sInfo.GpsSpeed / 3.6;
+
+  this->feed_gnss(gpsdata);
+}
+
+void Localization::GetPose(GdApi::LocalizationResult &result)
+{
+  double lat, lon, alt;
+  geoConverter.Reverse(egopose.x, egopose.y, egopose.z, lat, lon, alt);
+
+  result.UtcTime = egopose.Utctime;
+  result.LatitudeDegree = lat;
+  result.LongitudeDegree = lon;
+  result.Heading = egopose.phi / M_PI * 180.0;
+
+  result.TimeStamp = (uint64_t)egopose.timestamp * 1000;
 }
 
 void Localization::Initializer(const GPSDATA &p1, const GPSDATA &p2)
@@ -160,9 +212,9 @@ void Localization::correct_Phi(double &phi)
 
 Eigen::Quaterniond Localization::convertPhiToQuaterniond(const double phi)
 {
-    Eigen::AngleAxisd rotation_vector = Eigen::AngleAxisd(phi, Eigen::Vector3d::UnitZ());
-    Eigen::Quaterniond Q(rotation_vector);
-    return Q;
+  Eigen::AngleAxisd rotation_vector = Eigen::AngleAxisd(phi, Eigen::Vector3d::UnitZ());
+  Eigen::Quaterniond Q(rotation_vector);
+  return Q;
 }
 
 void Localization::CalibrateBias(const IMUDATA &imu)
@@ -644,18 +696,3 @@ void Localization::Run()
   }
 }
 
-void Localization::GetPose(Pose &current_pose)
-{
-  double lat, lon, alt;
-  geoConverter.Reverse(egopose.x, egopose.y, egopose.z, lat, lon, alt);
-
-  current_pose.timestamp = egopose.timestamp;
-  current_pose.Utctime = egopose.Utctime;
-  current_pose.x = egopose.x;
-  current_pose.y = egopose.y;
-  current_pose.z = egopose.z;
-  current_pose.latitude = lat;
-  current_pose.longtitude = lon;
-  current_pose.altitude = alt;
-  current_pose.heading = egopose.phi / M_PI * 180.0;
-}

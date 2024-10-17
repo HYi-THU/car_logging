@@ -33,6 +33,7 @@ include_directories(
 )
 
 add_library(Geographiccc
-    src/LocalCartesian.cpp
-    src/Geocentric.cpp
-    src/Math.cpp)
+  src/LocalCartesian.cpp
+  src/Geocentric.cpp
+  src/Math.cpp
+)
