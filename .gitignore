@@ -10,6 +10,7 @@ tags
 
 # Ignore build
 build*/
+log/*
 
 # Ignore CI build directory
 xcuserdata

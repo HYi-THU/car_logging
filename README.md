@@ -5,9 +5,11 @@
 ``` shell
 git clone https://github.com/HYi-THU/car_logging.git
 cd car_logging
-mkdir build
-cd build
-cmake ..
-make -j2
-./newlog
+cd 3rdparty/LocalizationLib/
+mkdir build && cd build
+cmake .. && make -j2
+cd ../../..
+mkdir build && cd build
+cmake .. && make -j2
+./run_offline
 ```
