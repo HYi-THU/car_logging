@@ -18,8 +18,6 @@ add_library(libLocalization SHARED IMPORTED)
 
 set_target_properties(libLocalization PROPERTIES IMPORTED_LOCATION "${LIBRARY_PATH}/liblibLocalization.so")
 
-add_executable(run_offline src/run_offline.cpp)
-
 include_directories(
     # ${YAML_CPP_INCLUDE_DIR}
     ${PROJECT_SOURCE_DIR}/3rdparty/LocalizationLib/3rdparty/GeographicLib/include/
@@ -28,6 +26,12 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include/
 )
 
+add_executable(run_offline src/run_offline.cpp)
 target_link_libraries(run_offline
+    libLocalization
+)
+
+add_executable(run_offline_1030 src/run_offline_1030.cpp)
+target_link_libraries(run_offline_1030
     libLocalization
 )
