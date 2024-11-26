@@ -17,6 +17,9 @@ public:
     // 0.2 使用前需要设定Sensor的数据频率
     virtual void set_Imu_Frequency(const uint16_t frequency) = 0;
 
+    // 0.3 使用前需要设定保存Data的目录
+    virtual void set_Data_Dir(const std::string dir) = 0;
+
     // 1.传递六轴传感器数据
     virtual void feed_imu_queue(const std::vector<GdApi::Sensor> &arrSensor) = 0;
 

@@ -35,3 +35,8 @@ add_executable(run_offline_1030 src/run_offline_1030.cpp)
 target_link_libraries(run_offline_1030
     libLocalization
 )
+
+add_executable(run_online src/run_online.cpp)
+target_link_libraries(run_online
+    libLocalization
+)

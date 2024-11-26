@@ -46,9 +46,16 @@ private:
     Pose drpose;
     Pose gpspose;
 
+    bool save_data_ = false;
+    bool init_save_flag_ = false;
+
     std::string gnss_locked_status_;
     std::string current_path_;
     std::string log_path_;
+    std::string data_dir_;
+    std::ofstream log_fout_;
+    std::ofstream data_fout_;
+
     std::string egopose_path_;
     std::string drpose_path_;
     std::string gpspose_path_;
@@ -56,7 +63,6 @@ private:
     std::string imudata_path_;
     std::string gpsdata_path_;
 
-    std::ofstream log_fout_;
     std::ofstream egopose_fout_;
     std::ofstream drpose_fout_;
     std::ofstream gpspose_fout_;
@@ -80,6 +86,9 @@ public:
 
     // 0.2 使用前需要设定Sensor的数据频率
     virtual void set_Imu_Frequency(const uint16_t frequency);
+
+    // 0.3 使用前需要设定保存Data的目录
+    virtual void set_Data_Dir(const std::string dir);
 
     // 1.传递六轴传感器数据
     virtual void feed_imu_queue(const std::vector<GdApi::Sensor> &arrSensor);

@@ -13,12 +13,15 @@ namespace GdApi
   }
 
   void GdWorker::SetGnssLockStatus(const uint32_t Status){
-    // loc_ptr->set_Gnss_Locked_Status(std::to_string(Status));
     loc_ptr->set_Gnss_Locked_Status(Status);
   }
 
   void GdWorker::SetSensorFrequency(const uint16_t frequency){
     loc_ptr->set_Imu_Frequency(frequency);
+  }
+
+  void GdWorker::set_Data_Dir(const std::string dir){
+    loc_ptr->set_Data_Dir(dir);
   }
 
   void GdWorker::SetSensor(const std::vector<Sensor> &arrSensor){

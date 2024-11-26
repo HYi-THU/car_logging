@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD 14)
 # 输出测试
 message("hello")
 message(STATUS ${PROJECT_NAME})
+add_definitions(-DEIGEN_DONT_ALIGN_STATICALLY)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/3rdparty/GeographicLib/include/

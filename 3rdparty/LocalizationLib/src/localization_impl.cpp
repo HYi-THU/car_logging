@@ -76,6 +76,12 @@ void Localization::set_Imu_Frequency(const uint16_t frequency)
   imu_dt_ = 1.0 / imu_frequency_;
 }
 
+void Localization::set_Data_Dir(const std::string dir)
+{
+  data_dir_ = dir;
+  save_data_ = true;
+}
+
 void Localization::feed_imu_queue(const std::vector<GdApi::Sensor> &arrSensor)
 {
   int idx = 0;
@@ -83,8 +89,17 @@ void Localization::feed_imu_queue(const std::vector<GdApi::Sensor> &arrSensor)
 
   for (auto &sen : arrSensor)
   {
-    IMUDATA imudata;
+    if (save_data_ && init_save_flag_)
+    {
+      data_fout_ << "AcceSpeed(X/Y/Z)=" << sen.AccX
+                 << "/" << sen.AccY
+                 << "/" << sen.AccZ
+                 << " (0.01g), AngSpeed(X/Y/Z)=" << sen.AngX
+                 << "/" << sen.AngY
+                 << "/" << sen.AngZ << " (0.01deg/s)" << std::endl;
+    }
 
+    IMUDATA imudata;
     imudata.index = idx++;
     imudata.Utctime = sen.UtcTime;
     imudata.timestamp = 1e-3 * sen.TimeStamp;
@@ -103,6 +118,30 @@ void Localization::feed_imu_queue(const std::vector<GdApi::Sensor> &arrSensor)
 
 void Localization::feed_gnss(const GdApi::GnssInfo &sInfo)
 {
+  if (save_data_)
+  {
+    if (!init_save_flag_)
+    {
+      auto now = std::chrono::system_clock::now();
+      std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+      auto localTime = std::localtime(&currentTime);
+      char timeString[80];
+      std::strftime(timeString, sizeof(timeString), "%Y-%m-%d_%H:%M:%S", localTime);
+
+      data_dir_ += std::string(timeString) + ".txt";
+      data_fout_.open(data_dir_, std::ios::trunc);
+      init_save_flag_ = true;
+    }
+
+    data_fout_ << "GpsTm=" << sInfo.UtcTime
+               << ",Flag=" << sInfo.Status
+               << std::fixed << std::setprecision(6)
+               << ",Longi=" << sInfo.LongitudeDegree
+               << ",Lati=" << sInfo.LatitudeDegree
+               << ",Speed=" << sInfo.GpsSpeed
+               << "(km/h),Yaw=" << sInfo.GpsAngle << "(deg)" << std::endl;
+  }
+
   GPSDATA gpsdata;
   gpsdata.Utctime = sInfo.UtcTime;
   gpsdata.timestamp = 1e-3 * sInfo.TimeStamp;
@@ -111,6 +150,7 @@ void Localization::feed_gnss(const GdApi::GnssInfo &sInfo)
   gpsdata.longitude = sInfo.LongitudeDegree;
   gpsdata.altitude = 1.0 * sInfo.GpsAltitude;
   gpsdata.vehiclespeed = 1.0 * sInfo.GpsSpeed / 3.6;
+  gpsdata.vehicleheading = sInfo.GpsAngle;
 
   this->feed_gnss(gpsdata);
 }
@@ -656,10 +696,9 @@ void Localization::Run()
 
   if (initial_flag)
   {
-
     for (auto &loc_data : loc_data_queue_)
     {
-      std::cout << "Header UtcTime: " << loc_data.Utctime << ", "
+      log_fout_ << "Header UtcTime: " << loc_data.Utctime << ", "
                 // << "imu UtcTime: [" << loc_data.imu_data_queue.front().timestamp
                 // << "," << loc_data.imu_data_queue.back().timestamp << "], "
                 << loc_data.imu_flag << loc_data.gps_flag << "(" << imu_buffer_.size() << ")" << std::endl;
@@ -671,7 +710,7 @@ void Localization::Run()
     LocData curr_loc_data = loc_data_queue_.front();
     if (curr_loc_data.imu_flag && curr_loc_data.gps_flag)
     {
-      std::cout << "Header UtcTime: " << curr_loc_data.Utctime
+      log_fout_ << "Header UtcTime: " << curr_loc_data.Utctime
                 << ", imu UtcTime: [" << curr_loc_data.imu_data_queue.front().timestamp
                 << "," << curr_loc_data.imu_data_queue.back().timestamp << "], "
                 << curr_loc_data.imu_flag << curr_loc_data.gps_flag << "(" << imu_buffer_.size() << ")" << std::endl;
@@ -695,4 +734,3 @@ void Localization::Run()
     }
   }
 }
-

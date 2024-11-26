@@ -42,6 +42,7 @@ int main()
   work_ptr_ = std::make_shared<GdApi::GdWorker>();
   work_ptr_->SetGnssLockStatus(4);
   work_ptr_->SetSensorFrequency(100);
+  work_ptr_->set_Data_Dir(std::string("../data/"));
 
   while (std::getline(file, line))
   {
@@ -58,6 +59,7 @@ int main()
       gnssdata.LongitudeDegree = stod(ExtractNumbersAndDots(tokens_[2]));
       gnssdata.LatitudeDegree = stod(ExtractNumbersAndDots(tokens_[3]));
       gnssdata.GpsSpeed = stoi(ExtractNumbersAndDots(tokens_[4]));
+      gnssdata.GpsAngle = stoi(ExtractNumbersAndDots(tokens_[5]));
 
       std::string status_str = tokens_[1].substr(tokens_[1].find_first_of('=') + 1);
       if (status_str == "0x83")
@@ -106,7 +108,6 @@ int main()
   }
 
   file.close();
-
 
   std::string loc_result_path_;
   std::ofstream loc_result_fout_;

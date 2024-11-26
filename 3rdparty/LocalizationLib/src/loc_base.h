@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 #include <deque>
+#include <chrono>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -82,7 +83,7 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec)
 
 inline std::ostream &operator<<(std::ostream &os, const GPSDATA &gps)
 {
-    os << "TimeStamp: " << gps.timestamp << "(" << gps.Utctime << ")"
+    os << "TimeStamp: " << gps.Utctime
        << ", LockStatus: " << gps.lockstatus
        << ", Longitude: " << std::fixed << std::setprecision(6) << gps.longitude
        << ", Latitude: " << gps.latitude
@@ -90,7 +91,6 @@ inline std::ostream &operator<<(std::ostream &os, const GPSDATA &gps)
        << ", Speed: " << std::fixed << std::setprecision(2) << gps.vehiclespeed << "m/s"
        << ", Heading: " << gps.vehicleheading;
 
-    // os << std::setprecision(9) << gps.latitude << ", " << gps.longitude;
     return os;
 }
 

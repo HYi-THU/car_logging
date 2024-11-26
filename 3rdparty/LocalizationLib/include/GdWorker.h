@@ -19,6 +19,9 @@ namespace GdApi
     // 0.2 使用前需要设定Sensor的数据频率
     void SetSensorFrequency(const uint16_t frequency);
 
+    // 0.3 使用前需要设定保存Data的目录
+    void set_Data_Dir(const std::string dir);
+
     // 1.传递六轴传感器数据
     void SetSensor(const std::vector<Sensor> &arrSensor);
 

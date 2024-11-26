@@ -22,7 +22,7 @@ int main()
     std::cerr << "Failed to get current directory" << std::endl;
   }
 
-  std::ifstream file("../data/20241030_100hz.txt");
+  std::ifstream file("../data/2024-11-26_11:10:53.txt");
 
   if (!file.is_open())
   {
@@ -41,34 +41,24 @@ int main()
   std::shared_ptr<GdApi::GdWorker> work_ptr_;
   work_ptr_ = std::make_shared<GdApi::GdWorker>();
   work_ptr_->SetGnssLockStatus(4);
-  work_ptr_->SetSensorFrequency(5);
+  work_ptr_->SetSensorFrequency(100);
 
   while (std::getline(file, line))
   {
-    if (line.substr(0, 4) == "GpsTm")
+    if (line.substr(0, 5) == "GpsTm")
     {
       tokens_ = SplitStringByComma(line);
       idx = 0;
-      time = tokens_[0].substr(tokens_[0].find_last_of('=') + 1);
-      utc_time = convertStringToIntTime(time);
+      utc_time = stoi(ExtractNumbersAndDots(tokens_[0]));
 
       GdApi::GnssInfo gnssdata;
       gnssdata.UtcTime = utc_time;
       gnssdata.TimeStamp = (uint64_t)utc_time * 1000;
-      gnssdata.LongitudeDegree = stod(ExtractNumbersAndDots(tokens_[4]));
-      gnssdata.LatitudeDegree = stod(ExtractNumbersAndDots(tokens_[5]));
-      gnssdata.GpsSpeed = int16_t(1.0 * stod(ExtractNumbersAndDots(tokens_[6])));
-      gnssdata.GpsAltitude = stoi(ExtractNumbersAndDots(tokens_[7]));
-
-      std::string status_str = tokens_[8].substr(tokens_[8].find_first_of('=') + 1, 8);
-      if (status_str == "0x786433")
-      {
-        gnssdata.Status = 0;
-      }
-      else
-      {
-        gnssdata.Status = 4;
-      }
+      gnssdata.LongitudeDegree = stod(ExtractNumbersAndDots(tokens_[2]));
+      gnssdata.LatitudeDegree = stod(ExtractNumbersAndDots(tokens_[3]));
+      gnssdata.GpsSpeed = stoi(ExtractNumbersAndDots(tokens_[4]));
+      gnssdata.GpsAngle = stoi(ExtractNumbersAndDots(tokens_[5]));
+      gnssdata.Status = stoi(ExtractNumbersAndDots(tokens_[1]));
 
       work_ptr_->SetSensor(Sensor_queue_);
       work_ptr_->SetGnss(gnssdata);
@@ -81,14 +71,11 @@ int main()
     }
     else
     {
-      line = line.substr(line.find_first_of(':') + 2);
       tokens_ = SplitStringByComma(line);
       tokens_[0] = tokens_[0].substr(tokens_[0].find_first_of('=') + 1);
       tokens_[0] = tokens_[0].substr(0, tokens_[0].find_first_of('(') - 1);
       tokens_[1] = tokens_[1].substr(tokens_[1].find_first_of('=') + 1);
       tokens_[1] = tokens_[1].substr(0, tokens_[1].find_first_of('(') - 1);
-
-      // std::cout << tokens_[0] << "\t" << tokens_[1] << std::endl;
 
       std::vector<double> acceleration, anglespeed;
       str2vector(tokens_[0], acceleration, 1.0);
@@ -96,7 +83,7 @@ int main()
 
       GdApi::Sensor sensor;
       sensor.UtcTime = utc_time;
-      sensor.TimeStamp = (uint64_t)utc_time * 1000 + idx * 200;
+      sensor.TimeStamp = (uint64_t)utc_time * 1000 + idx * 10;
       sensor.AccX = int(acceleration[0]);
       sensor.AccY = int(acceleration[1]);
       sensor.AccZ = int(acceleration[2]);
@@ -111,7 +98,6 @@ int main()
 
   file.close();
 
-
   std::string loc_result_path_;
   std::ofstream loc_result_fout_;
 
@@ -121,9 +107,12 @@ int main()
   // 保存经纬度信息
   for (auto &loc_res : loc_result_queue_)
   {
-    loc_result_fout_ << std::setprecision(9)
-                     << loc_res.LatitudeDegree << ", "
-                     << loc_res.LongitudeDegree << std::endl;
+    if (loc_res.LatitudeDegree > 0.1 && loc_res.LongitudeDegree > 0)
+    {
+      loc_result_fout_ << std::setprecision(9)
+                       << loc_res.LatitudeDegree << ", "
+                       << loc_res.LongitudeDegree << std::endl;
+    }
   }
   std::cout << "finish!" << std::endl;
 
