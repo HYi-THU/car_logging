@@ -13,6 +13,7 @@ message(STATUS ${PROJECT_NAME})
 
 # 设置共享库的路径
 set(LIBRARY_PATH "${PROJECT_SOURCE_DIR}/3rdparty/LocalizationLib/build")
+# set(LIBRARY_PATH "${PROJECT_SOURCE_DIR}/3rdparty/LocalizationLib/build_arm")
 
 add_library(libLocalization SHARED IMPORTED)
 
