@@ -13,16 +13,22 @@ public:
 
 private:
     GeographicLib::LocalCartesian geoConverter;
-    // YAML::Node config;
 
     uint32_t initial_timestamp;
-    bool save_flag = false;
-    bool initial_flag = false;
-    bool vehicle_static = false;
-    bool imu_calibration = false;
+    bool initial_flag = false;      // 定位初始化
+    bool vehicle_static = false;    // 车辆静止
+    bool imu_calibration = false;   // imu标定
 
+    // 给定 IMU 默认频率
     uint16_t imu_frequency_ = 5;
     double imu_dt_ = 0.2;
+    
+    std::string gnss_locked_status_;
+    std::string current_path_;
+    std::string log_path_;
+    std::string data_dir_;
+    std::ofstream log_fout_;
+    std::ofstream data_fout_;
 
     IMUDATA current_imu_, last_imu_;
     std::deque<IMUDATA> imu_buffer_;
@@ -46,16 +52,11 @@ private:
     Pose drpose;
     Pose gpspose;
 
-    bool save_data_ = false;
-    bool init_save_flag_ = false;
+    bool save_data_ = false;        // 设定存储数据的flag
+    bool init_save_flag_ = false;   // 设定GPS存储在前, 因需要确认已经开始存入GPS
 
-    std::string gnss_locked_status_;
-    std::string current_path_;
-    std::string log_path_;
-    std::string data_dir_;
-    std::ofstream log_fout_;
-    std::ofstream data_fout_;
-
+    // 存储中间数据
+    bool save_flag = false;
     std::string egopose_path_;
     std::string drpose_path_;
     std::string gpspose_path_;

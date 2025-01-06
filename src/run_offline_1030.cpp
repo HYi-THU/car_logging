@@ -58,7 +58,7 @@ int main()
       gnssdata.TimeStamp = (uint64_t)utc_time * 1000;
       gnssdata.LongitudeDegree = stod(ExtractNumbersAndDots(tokens_[2]));
       gnssdata.LatitudeDegree = stod(ExtractNumbersAndDots(tokens_[3]));
-      gnssdata.GpsSpeed = stoi(ExtractNumbersAndDots(tokens_[4]));
+      gnssdata.GpsSpeed = 10 * stoi(ExtractNumbersAndDots(tokens_[4]));
       gnssdata.GpsAngle = stoi(ExtractNumbersAndDots(tokens_[5]));
 
       std::string status_str = tokens_[1].substr(tokens_[1].find_first_of('=') + 1);

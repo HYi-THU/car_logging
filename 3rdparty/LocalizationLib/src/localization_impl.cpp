@@ -2,14 +2,6 @@
 
 Localization::Localization()
 {
-  // std::ifstream fin_config("/home/lhy/codecplus/test/config.yaml");
-  // if (!fin_config.is_open())
-  // {
-  //     std::cerr << "Error: Unable to open file 'config.yaml'." << std::endl;
-  // }
-
-  // config = YAML::Load(fin_config);
-
   // bias_ax = config["bias_ax"].as<double>();
   // bias_ay = config["bias_ay"].as<double>();
   // bias_wz = config["bias_wz"].as<double>();
@@ -139,7 +131,7 @@ void Localization::feed_gnss(const GdApi::GnssInfo &sInfo)
                << ",Longi=" << sInfo.LongitudeDegree
                << ",Lati=" << sInfo.LatitudeDegree
                << ",Speed=" << sInfo.GpsSpeed
-               << "(km/h),Yaw=" << sInfo.GpsAngle << "(deg)" << std::endl;
+               << "(0.1km/h),Yaw=" << sInfo.GpsAngle << "(deg)" << std::endl;
   }
 
   GPSDATA gpsdata;
@@ -149,7 +141,7 @@ void Localization::feed_gnss(const GdApi::GnssInfo &sInfo)
   gpsdata.latitude = sInfo.LatitudeDegree;
   gpsdata.longitude = sInfo.LongitudeDegree;
   gpsdata.altitude = 1.0 * sInfo.GpsAltitude;
-  gpsdata.vehiclespeed = 1.0 * sInfo.GpsSpeed / 3.6;
+  gpsdata.vehiclespeed = 0.1 * sInfo.GpsSpeed / 3.6;
   gpsdata.vehicleheading = sInfo.GpsAngle;
 
   this->feed_gnss(gpsdata);

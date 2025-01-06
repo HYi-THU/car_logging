@@ -22,7 +22,12 @@ int main()
     std::cerr << "Failed to get current directory" << std::endl;
   }
 
-  std::ifstream file("../data/2024-11-26_11:10:53.txt");
+  // std::ifstream file("../data/2024-12-30_20:17:09.txt");
+  // std::ifstream file("../data/2025-01-03_11-37-27.txt");
+  // std::ifstream file("../data/2025-01-03_14-01-23.txt");
+  // std::ifstream file("../data/2025-01-03_14-25-22.txt");
+  // std::ifstream file("../data/2025-01-03_15-06-36.txt");
+  std::ifstream file("../data/2025-01-03_15-31-39.txt");
 
   if (!file.is_open())
   {
@@ -42,6 +47,7 @@ int main()
   work_ptr_ = std::make_shared<GdApi::GdWorker>();
   work_ptr_->SetGnssLockStatus(4);
   work_ptr_->SetSensorFrequency(100);
+  // work_ptr_->set_Data_Dir("/home/lhy/car_logging/data/");
 
   while (std::getline(file, line))
   {
@@ -58,6 +64,7 @@ int main()
       gnssdata.LatitudeDegree = stod(ExtractNumbersAndDots(tokens_[3]));
       gnssdata.GpsSpeed = stoi(ExtractNumbersAndDots(tokens_[4]));
       gnssdata.GpsAngle = stoi(ExtractNumbersAndDots(tokens_[5]));
+      std::cout <<  gnssdata.GpsSpeed << std::endl;
       gnssdata.Status = stoi(ExtractNumbersAndDots(tokens_[1]));
 
       work_ptr_->SetSensor(Sensor_queue_);

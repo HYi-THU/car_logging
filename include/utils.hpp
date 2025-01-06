@@ -70,11 +70,17 @@ inline std::vector<std::string> SplitStringByComma(const std::string &str)
 inline std::string ExtractNumbersAndDots(const std::string &str)
 {
     std::string numbersAndDots;
+    bool start = false;
     for (char c : str)
     {
         if (std::isdigit(c) || c == '.')
         {
             numbersAndDots += c;
+            start = true;
+        }
+        else if(start) {
+            // 如果提取过程中出现其他字符, 则可以判定已经终止
+            break;
         }
     }
     return numbersAndDots;
