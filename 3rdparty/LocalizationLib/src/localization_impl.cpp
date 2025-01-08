@@ -2,12 +2,13 @@
 
 Localization::Localization()
 {
-  // bias_ax = config["bias_ax"].as<double>();
-  // bias_ay = config["bias_ay"].as<double>();
-  // bias_wz = config["bias_wz"].as<double>();
-  bias_ax = -0.374946;
-  bias_ay = -0.415610;
-  bias_wz = -0.015;
+  // bias_ax = -0.374946;
+  // bias_ay = -0.415610;
+  // bias_wz = -0.015;
+
+  bias_ax = 0.0;
+  bias_ay = 0.0;
+  bias_wz = 0.0;
 
   char buffer[1024];
   if (getcwd(buffer, sizeof(buffer)) != nullptr)
@@ -83,7 +84,8 @@ void Localization::feed_imu_queue(const std::vector<GdApi::Sensor> &arrSensor)
   {
     if (save_data_ && init_save_flag_)
     {
-      data_fout_ << "AcceSpeed(X/Y/Z)=" << sen.AccX
+      data_fout_ << "TimeStamp=" << sen.TimeStamp
+                 << ", AccSpeed(X/Y/Z)=" << sen.AccX
                  << "/" << sen.AccY
                  << "/" << sen.AccZ
                  << " (0.01g), AngSpeed(X/Y/Z)=" << sen.AngX
@@ -126,6 +128,7 @@ void Localization::feed_gnss(const GdApi::GnssInfo &sInfo)
     }
 
     data_fout_ << "GpsTm=" << sInfo.UtcTime
+               << ",TimeStamp=" << sInfo.TimeStamp
                << ",Flag=" << sInfo.Status
                << std::fixed << std::setprecision(6)
                << ",Longi=" << sInfo.LongitudeDegree

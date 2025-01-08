@@ -76,3 +76,5 @@ adapter/build/
 adapter/log/
 
 resource/config/traj/
+
+scripts/*.txt

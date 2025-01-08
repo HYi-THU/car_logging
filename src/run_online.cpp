@@ -27,7 +27,13 @@ int main()
   // std::ifstream file("../data/2025-01-03_14-01-23.txt");
   // std::ifstream file("../data/2025-01-03_14-25-22.txt");
   // std::ifstream file("../data/2025-01-03_15-06-36.txt");
-  std::ifstream file("../data/2025-01-03_15-31-39.txt");
+  // std::ifstream file("../data/2025-01-03_15-31-39.txt");
+  // std::ifstream file("../data/2025-01-03_16-10-00.txt");
+  // std::ifstream file("../data/2025-01-03_16-15-41.txt");
+  // std::ifstream file("../data/2025-01-04_16-53-24.txt");
+  // std::ifstream file("../data/2025-01-04_18-03-15.txt");
+  std::ifstream file("../data/2025-01-06_09-52-07.txt");
+  // std::ifstream file("../data/2025-01-06_12-03-12.txt");
 
   if (!file.is_open())
   {
@@ -48,6 +54,7 @@ int main()
   work_ptr_->SetGnssLockStatus(4);
   work_ptr_->SetSensorFrequency(100);
   // work_ptr_->set_Data_Dir("/home/lhy/car_logging/data/");
+  // work_ptr_->set_Data_Dir("/home/lhy/codecplus/car_logging/test/");
 
   while (std::getline(file, line))
   {
